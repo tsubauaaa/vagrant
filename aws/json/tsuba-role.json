@@ -1,0 +1,42 @@
+{
+  "name": "tsuba-role",
+  "chef_type": "role",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+    "platform": "amazon",
+    "platform_family": "rhel",
+     "authorization": {
+       "adduser": {
+         "users": [
+           "tsuba-admin"
+         ]
+       },
+       "sudo": {
+         "users": [
+           "tsuba-admin"
+         ],
+         "passwordless": true,
+         "include_sudoers_d": true
+       }
+     }
+  },
+  "description": "The Role is tsubauaaa Testing AmazonLinux on EC2",
+  "run_list":[
+    "recipe[yum-epel]",
+    "recipe[awscli]",
+    "recipe[adduser]",
+    "recipe[build-essential]",
+    "recipe[chef_handler]",
+    "recipe[cron]",
+    "recipe[iptables]",
+    "recipe[jq]",
+    "recipe[logrotate::global]",
+    "recipe[ntp]",
+    "recipe[python]",
+    "recipe[sudo]",
+    "recipe[selinux::disabled]",
+    "recipe[timezone]",
+    "recipe[yum-amazon]",
+    "recipe[yum-update]"
+  ]
+}

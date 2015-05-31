@@ -1,0 +1,43 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Dotenv.load
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "dummy"
+  config.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"
+  config.vm.synced_folder ".", "/home/ec2-user/vagrant", type: "rsync"
+  config.omnibus.chef_version = :latest
+
+  config.vm.provider :aws do |aws, override|
+    aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']
+    aws.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY'] 
+    aws.keypair_name = ENV['AWS_KEYPAIR_NAME']
+    aws.instance_type = "t2.micro"
+    aws.region = ENV['AWS_REGION']
+    aws.ami = ENV['AWS_AMI_ID']
+    aws.iam_instance_profile_name = ENV['AWS_INSTANCE_ROLE_NAME']
+    aws.subnet_id = ENV['AWS_SUBNET_ID']
+    aws.security_groups = [ ENV['AWS_SECURITY_GROUP_ID'] ]
+    aws.tags = {
+      "Name"        => "vagrant-aws",
+      "Owner"        => "YOUR_EMAIL_ADDRESS",
+      "Maintenance" => "On"
+    }
+    aws.user_data = "#!/bin/sh\nsed -i 's/^.*requiretty/#Defaults requiretty/' /etc/sudoers\n"
+    override.ssh.username = ENV['AWS_SSH_USERNAME']
+    override.ssh.pty = true
+    override.ssh.private_key_path = ENV['AWS_SSH_KEY']
+  end
+
+  config.vm.provision :chef_solo do |chef|
+    chef.synced_folder_type = 'rsync'
+    chef.cookbooks_path = "../cookbooks"
+    chef.roles_path = "./json"
+    chef.add_role "tsuba-role"
+  end
+
+  config.vm.provision :serverspec do |spec|
+    spec.pattern = "spec/localhost/*_spec.rb"
+  end
+
+end
