@@ -1,0 +1,51 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Dotenv.load
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "dummy"
+  config.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"
+  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+  config.omnibus.chef_version = :latest
+  config.vm.provider :cloudstack do |cloudstack, override|
+    cloudstack.host = "compute.jp-east.idcfcloud.com"
+    cloudstack.path = "/client/api"
+    cloudstack.port = "443"
+    cloudstack.scheme = "https"
+    cloudstack.api_key = "#{ENV['CLOUDSTACK_API_KEY']}"
+    cloudstack.secret_key = "#{ENV['CLOUDSTACK_SECRET_KEY']}"
+    cloudstack.display_name = "CentOS65"
+    cloudstack.zone_name = "pascal"
+    cloudstack.template_name = "CentOS 6.5 64-bit for Vagrant"
+    cloudstack.service_offering_name = "light.S1"
+
+    cloudstack.port_forwarding_rules = [
+      { :ipaddress => "#{ENV['PUBLIC_IP_ADDRESS']}",
+        :protocol => "tcp", :publicport => 10022, :privateport  => 22,
+        :openfirewall => false }
+    ]
+    cloudstack.firewall_rules = [
+      { :ipaddress => "#{ENV['PUBLIC_IP_ADDRESS']}",
+        :cidrlist => "#{ENV['CIDR_LIST']}",
+        :protocol => "tcp", :startport => 10022, :endport  => 10022, }
+    ]
+    cloudstack.pf_ip_address   = "#{ENV['PUBLIC_IP_ADDRESS']}"
+    cloudstack.pf_private_port  = 22
+    cloudstack.pf_public_port  = 10022
+    cloudstack.pf_open_firewall   = false
+    cloudstack.keypair = "#{ENV['CLOUDSTACK_SSH_KEYPAIR']}"
+    override.ssh.private_key_path = "#{ENV['VAGRANT_SSH_PRIVATE_KEY']}"
+  end
+
+  config.vm.provision :chef_solo do |chef|
+    chef.synced_folder_type = 'rsync'
+    chef.cookbooks_path = "../cookbooks"
+    chef.roles_path = "./json"
+    chef.add_role "tsuba-role"
+  end
+=begin
+  config.vm.provision :serverspec do |spec|
+    spec.pattern = "spec/localhost/*_spec.rb"
+  end
+=end
+end

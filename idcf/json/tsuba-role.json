@@ -1,0 +1,36 @@
+{
+  "name": "tsuba-role",
+  "chef_type": "role",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+    "platform": "centos",
+    "platform_family": "rhel",
+      "authorization": {
+        "adduser": {
+          "users": [
+            "tsuba-admin"
+          ]
+        },
+        "sudo": {
+          "users": [
+            "tsuba-admin"
+          ],
+          "passwordless": true,
+          "include_sudoers_d": false
+      }
+    }
+  },
+  "description": "The Role is tsubauaaa Testing CentOS6 for IDCF Cloud",
+  "run_list":[
+    "recipe[yum-epel]",
+    "recipe[adduser]",
+    "recipe[build-essential]",
+    "recipe[cron]",
+    "recipe[iptables]",
+    "recipe[logrotate::global]",
+    "recipe[ntp]",
+    "recipe[selinux::disabled]",
+    "recipe[sudo]",
+    "recipe[timezone]"
+  ]
+}
