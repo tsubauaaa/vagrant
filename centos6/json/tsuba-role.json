@@ -18,7 +18,7 @@
           ],
           "passwordless": true,
           "include_sudoers_d": false
-      }
+        }
     }
   },
   "description": "The Role is tsubauaaa Testing CentOS6",
